@@ -1,0 +1,21 @@
+version: '3'
+services:
+  channel-request-processor:
+    image: channel-request-processor
+    container_name: channel-request-processor
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - TZ=Africa/Nairobi
+    volumes:
+      - ./src/main/resources/application.yml:/app/application.yml
+      - ./certs/sample.p12:/app/certs/sample.p12
+      - ./logs:/app/logs
+    networks:
+      - esb-docker-network
+networks:
+  esb-docker-network:
+    external: true

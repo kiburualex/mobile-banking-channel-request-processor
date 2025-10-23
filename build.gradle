@@ -5,8 +5,14 @@ plugins {
 }
 
 group = 'io.firogence'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 description = 'Mobile Banking Channel Request Processor'
+
+bootJar {
+	// Changes the name part, but keeps the version and extension.
+	// e.g., output will be 'my-new-base-0.0.1-SNAPSHOT.jar'
+	archiveBaseName = 'channel-request-processor'
+}
 
 java {
 	toolchain {
@@ -30,6 +36,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation("com.github.ua-parser:uap-java:1.6.1")
+	implementation("com.google.code.gson:gson:2.13.2")
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
