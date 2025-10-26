@@ -13,8 +13,15 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties(prefix = "channel")
 public class ChannelProperties {
+    private Credentials credentials;
     private List<String> allowedIps;
     private Urls urls;
+
+    @Data
+    public static class Credentials {
+        private String username;
+        private String password;
+    }
 
     @Data
     public static class Urls {

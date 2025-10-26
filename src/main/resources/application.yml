@@ -8,9 +8,29 @@ server:
 spring:
   application:
     name: mobile-banking-channel-request-processor
+  datasource:
+    url: jdbc:postgresql://localhost:5433/finbanking_services
+    username: finbanking
+    password: finbanking
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      pool-name: api-db-pool
+      minimum-idle: 3
+  ## enable virtual threads to allow multiple concurrent requests
+  threads:
+    virtual:
+      enabled: true
+  ## spawn a non-daemon platform thread which keeps the JVM alive when using virtual threads
+  ## if disabled, @scheduled method will stop after running once
+  main:
+    keep-alive: true
 
 # channel properties
 channel:
+  credentials:
+    password: "promptu$$"
+    username: "channel-api"
   allowed-ips:
     - 192.168.1.100
     - 10.0.0.50

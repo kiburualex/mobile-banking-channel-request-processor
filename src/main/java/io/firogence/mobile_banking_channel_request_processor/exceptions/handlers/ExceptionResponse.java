@@ -21,6 +21,7 @@ public class ExceptionResponse {
     private Integer errorCode;
     private String errorDescription;
     private String error;
+    private String timestamp;
     private Set<String> validationErrors;
     private Map<String, String> errors;
 }
