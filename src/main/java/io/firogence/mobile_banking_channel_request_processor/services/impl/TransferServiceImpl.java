@@ -20,6 +20,10 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public GenericResponse internalTransfer(InternalTransferRequest request) {
         log.info("Internal Transfer Request: {}", gson.toJson(request));
-        return null;
+        return GenericResponse.builder()
+                .status("00")
+                .message("Successful internal request")
+                .transactionId("120312012")
+                .build();
     }
 }

@@ -15,6 +15,7 @@ public class ReferenceValidator implements ConstraintValidator<ValidReference, S
     @Override
     public boolean isValid(String reference, ConstraintValidatorContext context) {
         if (reference == null || reference.isEmpty()) {
+            context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("Reference is mandatory").addConstraintViolation();
             return false;
         }
@@ -22,6 +23,7 @@ public class ReferenceValidator implements ConstraintValidator<ValidReference, S
         // Check if the account is valid and active
         boolean isAccountActive = transactionService.isValidReference(reference);
         if (!isAccountActive) {
+            context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("Reference exists for another transaction").addConstraintViolation();
             return false;
         }

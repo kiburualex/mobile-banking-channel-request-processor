@@ -25,8 +25,16 @@ public class ChannelProperties {
 
     @Data
     public static class Urls {
+        private String baseUrl;
         private String depositUrl;
+        private String transferUrl;
         private String withdrawUrl;
         private String balanceUrl;
+        private String accountLookupUrl;
+        private String miniStatementUrl;
+        private String fullStatementUrl;
+        private String mpesaCheckoutUrl;
+        private String mpesaB2cUrl;
+        private String mpesaB2bUrl;
     }
 }

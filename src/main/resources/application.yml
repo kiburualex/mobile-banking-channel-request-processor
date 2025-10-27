@@ -1,9 +1,12 @@
 server:
   port: 8082
+  servlet:
+    context-path: /api/v1/
   ssl:
     key-store: certs/sample.p12
     key-store-password: "!QA2ws#ED"
     keyAlias: POSTBANKESB
+
 
 spring:
   application:
@@ -35,7 +38,16 @@ channel:
     - 192.168.1.100
     - 10.0.0.50
     - 127.0.0.1
+    - 0:0:0:0:0:0:0:1
   urls:
-    deposit-url: "https://ip:port/deposit"
-    withdraw-url: "https://ip:port/withdraw"
-    balance-url: "https://ip:port/balance"
+    base-url: "https://ip:port"
+    deposit-url: "${channel.urls.base-url}/deposit"
+    transfer-url: "${channel.urls.base-url}/transfer"
+    withdraw-url: "${channel.urls.base-url}/withdraw"
+    balance-url: "${channel.urls.base-url}/balance"
+    account-lookup-url: "${channel.urls.base-url}/account-lookup"
+    mini-statement-url: "${channel.urls.base-url}/mini-statement"
+    full-statement-url: "${channel.urls.base-url}/full-statement"
+    mpesa-checkout-url: "https://ip:port/mpesa/checkout"
+    mpesa-b2c-url: "https://ip:port/mpesa/b2c"
+    mpesa-b2b-url: "https://ip:port/mpesa/b2b"
