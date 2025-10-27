@@ -30,7 +30,7 @@ public record InternalTransferRequest(
         String beneficiaryAccount,
 
         @NotNull(message = "Amount is mandatory")
-        @DecimalMin(value = "0.0", message = "Amount must be zero or positive")
+        @DecimalMin(value = "5.0", message = "Amount must be minimum of 5 or higher")
         BigDecimal amount,
 
         @ValidReference(message = "Reference is mandatory")

@@ -3,7 +3,6 @@ package io.firogence.mobile_banking_channel_request_processor.exceptions.handler
 import io.firogence.mobile_banking_channel_request_processor.exceptions.InvalidAuthenticationException;
 import io.firogence.mobile_banking_channel_request_processor.exceptions.MissingReferenceException;
 import io.firogence.mobile_banking_channel_request_processor.exceptions.OperationNotPermittedException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,7 +18,6 @@ import java.util.Set;
 /**
  * @author Alex Kiburu
  */
-@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private final String TIMESTAMP_FORMAT = "dd-MM-YYYY hh:mm:ss a";
@@ -28,7 +26,6 @@ public class GlobalExceptionHandler {
     // used to catch errors from model @Valid annotation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleException(MethodArgumentNotValidException exp){
-        log.error("MethodArgumentNotValidException:: ",exp);
         // set will remove any duplicate message
         Set<String> errors = new HashSet<>();
         exp.getBindingResult().getAllErrors()
@@ -51,7 +48,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(OperationNotPermittedException.class)
     public ResponseEntity<ExceptionResponse> handleException(OperationNotPermittedException exp){
-        log.error("OperationNotPermittedException:: ",exp);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(
@@ -64,25 +60,8 @@ public class GlobalExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponse> handleException(Exception exp){
-        log.error("Exception:: ",exp);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                        ExceptionResponse.builder()
-                                .status("01")
-                                .message(exp.getMessage())
-                                .errorDescription("Internal error, contact admin")
-                                .error(exp.getMessage())
-                                .timestamp(LocalDateTime.now().format(DATETIME_FORMATTER))
-                                .build()
-                );
-    }
-
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ExceptionResponse> handleException(NoSuchElementException exp){
-        log.error("NoSuchElementException:: ",exp);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(
@@ -97,7 +76,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingReferenceException.class)
     public ResponseEntity<ExceptionResponse> handleException(MissingReferenceException exp){
-        log.error("MissingReferenceException:: ",exp);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(
@@ -112,7 +90,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidAuthenticationException .class)
     public ResponseEntity<ExceptionResponse> handleException(InvalidAuthenticationException exp){
-        log.error("InvalidAuthenticationException:: ",exp);
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(
