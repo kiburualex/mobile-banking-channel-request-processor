@@ -2,10 +2,7 @@ package io.firogence.mobile_banking_channel_request_processor.entities;
 
 import io.firogence.mobile_banking_channel_request_processor.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
@@ -14,6 +11,7 @@ import java.util.Set;
  * @author Alex Kiburu
  */
 
+@ToString
 @Getter
 @Setter
 @SuperBuilder

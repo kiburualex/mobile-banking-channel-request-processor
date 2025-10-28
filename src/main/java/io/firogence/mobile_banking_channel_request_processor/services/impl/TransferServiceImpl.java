@@ -10,6 +10,7 @@ import io.firogence.mobile_banking_channel_request_processor.exceptions.Operatio
 import io.firogence.mobile_banking_channel_request_processor.repositories.TransactionServiceRepository;
 import io.firogence.mobile_banking_channel_request_processor.services.TransactionService;
 import io.firogence.mobile_banking_channel_request_processor.services.TransferService;
+import io.firogence.mobile_banking_channel_request_processor.utils.UtilService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class TransferServiceImpl implements TransferService {
     private final TransactionService transactionService;
     private final TransactionServiceRepository transactionServiceRepository;
+    private final UtilService utilService;
     private final Gson gson = new Gson();
 
     @Override
@@ -45,15 +47,18 @@ public class TransferServiceImpl implements TransferService {
                 .channel(request.channel())
                 .amount(request.amount())
                 .customerNationalId(request.nationalId())
-                .limitsJson(limitsData)
+                .limitsJson(limitsData == null ? "" : limitsData)
                 .build();
         ChannelLimit chargeLimit = transactionService.isAmountWithinLimit(channelLimitRequest);
-        if(chargeLimit.isHasLimit()) {
+        if(transactionServiceEntity.isApplyLimit()) {
+            if(!chargeLimit.isHasLimit())
+                throw new OperationNotPermittedException("Limits not set for service code " + request.serviceCode() + ", channel " + request.channel());
+
             if (!chargeLimit.isValidPerTransactionLimit())
-                throw new OperationNotPermittedException("Amount [" + request.amount().toString() + "] exceeds set limit [" + chargeLimit.getLimitPerTransaction().toString() + "]");
+                throw new OperationNotPermittedException("Amount [" + utilService.formatWithCommas(request.amount())+ "] exceeds set limit [" + utilService.formatWithCommas(chargeLimit.getLimitPerTransaction()) + "]");
 
             if (!chargeLimit.isValidDailyTransactionLimit())
-                throw new OperationNotPermittedException("Your total transaction amount exceeds daily limit [" + chargeLimit.getDailyTransactionLimit().toString() + "]");
+                throw new OperationNotPermittedException("Your total transaction amount exceeds daily limit [" + utilService.formatWithCommas(chargeLimit.getDailyTransactionLimit()) + "]");
         }
 
         return GenericResponse.builder()

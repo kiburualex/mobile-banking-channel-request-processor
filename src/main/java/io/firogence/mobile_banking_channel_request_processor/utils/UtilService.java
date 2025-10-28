@@ -11,6 +11,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,6 +24,19 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class UtilService {
+    public String formatWithCommas(BigDecimal number) {
+        if (number == null) {
+            return "";
+        }
+
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        DecimalFormat formatter = new DecimalFormat("#,##0.00", symbols);
+
+        // You can set the maximum number of decimal digits if needed
+        formatter.setMaximumFractionDigits(2);
+        return formatter.format(number);
+    }
+
     // extract details of the device used to send the request
     public String getDeviceAgentDetails(String userAgent) {
         String deviceDetails = "UNKNOWN";

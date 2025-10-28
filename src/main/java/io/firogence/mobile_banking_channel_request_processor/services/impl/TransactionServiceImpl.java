@@ -60,7 +60,6 @@ public class TransactionServiceImpl implements TransactionService {
     public ChannelLimit isAmountWithinLimit(ChannelLimitRequest request) {
         ChannelLimit limitData = new ChannelLimit();
         limitData.setChannel(request.getChannel());
-        limitData.setHasLimit(request.getLimitsJson() != null);
 
         try {
             // 1. Parse the JSON String into a List of ChannelLimit objects
@@ -81,9 +80,10 @@ public class TransactionServiceImpl implements TransactionService {
                         request.getServiceCode(),
                         request.getCustomerNationalId(),
                         LocalDateTime.now());
-                BigDecimal sumAmount = new BigDecimal(0);
+                BigDecimal sumAmount = new BigDecimal(10);
                 if(sumOfTodaysTransactions.isPresent())
                     sumAmount = sumOfTodaysTransactions.get();
+                sumAmount = sumAmount.add(request.getAmount());
                 limitData.setValidDailyTransactionLimit(sumAmount.compareTo(dailyTransactionLimit) <= 0);
             } else {
                 // Handle case where the channel is not found in the limits list
@@ -94,6 +94,7 @@ public class TransactionServiceImpl implements TransactionService {
             log.error(String.format("Error checking limits for channel %s - service: %s, ", request.getChannel(), request.getServiceCode()), e);
         }
 
+        limitData.setHasLimit(!request.getLimitsJson().isEmpty());
         return limitData;
     }
 
