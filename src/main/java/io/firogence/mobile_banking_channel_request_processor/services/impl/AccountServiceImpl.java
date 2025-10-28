@@ -17,4 +17,10 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
+    @Override
+    public boolean isValidAccountForCustomer(String accountNumber, String nationalId) {
+        /** todo:: perform account lookup and check if it's valid for user */
+        return true;
+    }
+
 }

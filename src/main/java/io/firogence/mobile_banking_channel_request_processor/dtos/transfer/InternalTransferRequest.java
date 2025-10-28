@@ -1,8 +1,9 @@
 package io.firogence.mobile_banking_channel_request_processor.dtos.transfer;
 
 import io.firogence.mobile_banking_channel_request_processor.configurations.validators.account.ValidAccount;
+import io.firogence.mobile_banking_channel_request_processor.configurations.validators.account.account_customer.ValidAccountCustomer;
 import io.firogence.mobile_banking_channel_request_processor.configurations.validators.reference.ValidReference;
-import io.firogence.mobile_banking_channel_request_processor.configurations.validators.service.ValidServiceAndChannel;
+import io.firogence.mobile_banking_channel_request_processor.configurations.validators.service.service_channel.ValidServiceAndChannel;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,9 +17,18 @@ import java.math.BigDecimal;
         serviceCodeField = "serviceCode",
         channelField = "channel"
 )
+
+@ValidAccountCustomer(
+        accountField = "account",
+        nationalIdField = "nationalId"
+)
+
 public record InternalTransferRequest(
-        @ValidAccount(message = "Account Number is mandatory")
+        @NotBlank(message = "Customer National is mandatory")
         String account,
+
+        @NotBlank(message = "Customer National is mandatory")
+        String nationalId,
 
         @NotBlank(message = "Channel is mandatory")
         String channel,

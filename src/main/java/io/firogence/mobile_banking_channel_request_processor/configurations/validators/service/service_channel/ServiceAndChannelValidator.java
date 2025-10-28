@@ -1,4 +1,4 @@
-package io.firogence.mobile_banking_channel_request_processor.configurations.validators.service;
+package io.firogence.mobile_banking_channel_request_processor.configurations.validators.service.service_channel;
 
 import io.firogence.mobile_banking_channel_request_processor.services.ChannelService;
 import io.firogence.mobile_banking_channel_request_processor.services.TransactionService;

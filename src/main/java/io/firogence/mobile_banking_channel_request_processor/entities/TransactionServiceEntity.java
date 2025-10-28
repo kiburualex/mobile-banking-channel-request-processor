@@ -30,7 +30,7 @@ public class TransactionServiceEntity extends BaseEntity {
     private String code;
 
     @Lob
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description")
     private String description;
 
     @Column(name = "cbs_account_number")
@@ -57,9 +57,20 @@ public class TransactionServiceEntity extends BaseEntity {
     @Column(name = "apply_limit", columnDefinition = "boolean default false")
     private boolean applyLimit;
 
+    @Column(name = "apply_commission", columnDefinition = "boolean default false")
+    private boolean applyCommission;
+
     @Lob
-    @Column(name = "limits_data", columnDefinition = "TEXT")
+    @Column(name = "limits_data")
     private String limitsData;
+
+    @Lob
+    @Column(name = "charges_data")
+    private String chargesData;
+
+    @Lob
+    @Column(name = "commissions_data")
+    private String commissionsData;
 
     // Defines the inverse side of the relationship.
     // 'mappedBy' references the 'service' field in the Tariff entity.
