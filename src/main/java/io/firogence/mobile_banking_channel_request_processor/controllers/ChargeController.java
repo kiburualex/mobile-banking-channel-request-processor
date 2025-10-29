@@ -1,8 +1,9 @@
 package io.firogence.mobile_banking_channel_request_processor.controllers;
 
 import io.firogence.mobile_banking_channel_request_processor.dtos.GenericResponse;
+import io.firogence.mobile_banking_channel_request_processor.dtos.charge.ChargeRequest;
 import io.firogence.mobile_banking_channel_request_processor.dtos.transfer.InternalTransferRequest;
-import io.firogence.mobile_banking_channel_request_processor.services.TransferService;
+import io.firogence.mobile_banking_channel_request_processor.services.ChargeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("charges")
 @RequiredArgsConstructor
 public class ChargeController {
-    private final TransferService transferService;
+    private final ChargeService chargeService;
 
     @PostMapping
-    public ResponseEntity<GenericResponse> create(@Valid @RequestBody InternalTransferRequest request){
-        return ResponseEntity.ok(transferService.internalTransfer(request));
+    public ResponseEntity<GenericResponse> create(@Valid @RequestBody ChargeRequest request){
+        return ResponseEntity.ok(chargeService.fetchCharges(request));
     }
 }

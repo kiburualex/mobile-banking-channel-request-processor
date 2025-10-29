@@ -1,6 +1,7 @@
 package io.firogence.mobile_banking_channel_request_processor.entities;
 
 import io.firogence.mobile_banking_channel_request_processor.common.BaseEntity;
+import io.firogence.mobile_banking_channel_request_processor.enums.ExpenseType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -55,12 +56,19 @@ public class TransactionServiceEntity extends BaseEntity {
     @Column(name = "apply_limit", columnDefinition = "boolean default false")
     private boolean applyLimit;
 
+    @Column(name = "apply_charge", columnDefinition = "boolean default false")
+    private boolean applyCharge;
+
     @Column(name = "apply_commission", columnDefinition = "boolean default false")
     private boolean applyCommission;
 
     @Lob
     @Column(name = "limits_data")
     private String limitsData;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "expense_type", nullable = true) // insist on nullable for intent
+    private ExpenseType expenseType;
 
     @Lob
     @Column(name = "charges_data")

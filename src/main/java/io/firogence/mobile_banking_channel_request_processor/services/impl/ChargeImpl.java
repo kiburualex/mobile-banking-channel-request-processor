@@ -2,21 +2,26 @@ package io.firogence.mobile_banking_channel_request_processor.services.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.firogence.mobile_banking_channel_request_processor.dtos.GenericResponse;
 import io.firogence.mobile_banking_channel_request_processor.dtos.charge.ChargeRequest;
 import io.firogence.mobile_banking_channel_request_processor.entities.TransactionServiceEntity;
-import io.firogence.mobile_banking_channel_request_processor.exceptions.OperationNotPermittedException;
+import io.firogence.mobile_banking_channel_request_processor.enums.ExpenseType;
 import io.firogence.mobile_banking_channel_request_processor.repositories.TransactionServiceRepository;
 import io.firogence.mobile_banking_channel_request_processor.services.ChargeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Alex Kiburu
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChargeImpl implements ChargeService {
@@ -32,17 +37,90 @@ public class ChargeImpl implements ChargeService {
             throw new NoSuchElementException("Service not found");
 
         TransactionServiceEntity transactionService = transactionServiceOptional.get();
-        if(transactionService.getChargesData() == null || transactionService.getChargesData().isEmpty())
+        if(!transactionService.isApplyCharge() || transactionService.getChargesData() == null || transactionService.getChargesData().isEmpty())
             throw new NoSuchElementException("No charge set for service : " + transactionService.getName());
 
-        var rangeData = transactionService.getChargesData();
-        JsonArray rangeDataArray = gson.fromJson(rangeData, JsonArray.class);
+        // calculate charge if expense type is CUSTOMER_EXPENSE
+        var chargeAmount = BigDecimal.ZERO;
+        if(transactionService.getExpenseType().equals(ExpenseType.CUSTOMER_EXPENSE)){
+            try {
+                var chargesData = transactionService.getChargesData();
+                JsonArray chargesDataArray = gson.fromJson(chargesData, JsonArray.class);
+                chargeAmount = calculateCharge(request.channel(), request.amount(), chargesDataArray);
+            } catch (Exception e) {
+                log.error("Error calculating charge amount::", e);
+            }
+        }
 
         // todo:: apply script engine or another formula
+        Map<Object, Object> dataObject = new HashMap<>();
+        dataObject.put("amount", chargeAmount);
         return GenericResponse.builder()
                 .status("00")
                 .message("success")
-                .data(rangeDataArray)
+                .data(dataObject)
                 .build();
+    }
+
+    // calculate charge
+    public BigDecimal calculateCharge(String channel, BigDecimal amount, JsonArray configArray) {
+        // find the configuration object matching the input channel
+        for (JsonElement element : configArray) {
+            JsonObject configObject = element.getAsJsonObject();
+            JsonArray channelsArray = configObject.getAsJsonArray("channels");
+            // convert JsonArray of strings to a Java List<String> for easy checking
+            List<String> validChannels = StreamSupport.stream(channelsArray.spliterator(), false)
+                    .map(JsonElement::getAsString)
+                    .toList();
+
+            if (validChannels.contains(channel)) {
+                // channel match found, now calculate the charge
+                JsonObject chargeConfig = configObject.getAsJsonObject("chargeConfig");
+                String chargeType = chargeConfig.getAsJsonPrimitive("chargeType").getAsString();
+                return calculateChargeByConfig(chargeType, chargeConfig, amount);
+            }
+        }
+
+        log.info("No charge configuration found for channel: {}", channel);
+        return BigDecimal.ZERO;
+    }
+
+    // calculate charge by configuration
+    private BigDecimal calculateChargeByConfig(String chargeType, JsonObject chargeConfig, BigDecimal amount) {
+        final BigDecimal HUNDRED = new BigDecimal("100");
+        switch (chargeType) {
+            case "fixed":
+                return chargeConfig.getAsJsonPrimitive("amount").getAsBigDecimal();
+            case "percentage":
+                BigDecimal percentageRate = chargeConfig.getAsJsonPrimitive("amount").getAsBigDecimal();
+                return amount.multiply(percentageRate).divide(HUNDRED, 2, java.math.RoundingMode.HALF_UP);
+            case "range":
+                JsonArray rangeRows = chargeConfig.getAsJsonArray("rangeRows");
+                for (JsonElement rowElement : rangeRows) {
+                    JsonObject row = rowElement.getAsJsonObject();
+                    BigDecimal minAmount = row.getAsJsonPrimitive("minAmount").getAsBigDecimal();
+                    BigDecimal maxAmount = row.getAsJsonPrimitive("maxAmount").getAsBigDecimal();
+
+                    // check if the input amount falls within the range (inclusive of min, inclusive of max for simplicity)
+                    if (amount.compareTo(minAmount) >= 0 && amount.compareTo(maxAmount) <= 0) {
+                        String type = row.getAsJsonPrimitive("type").getAsString();
+                        BigDecimal fee = row.getAsJsonPrimitive("amount").getAsBigDecimal();
+                        if ("fixed".equals(type)) {
+                            return fee;
+                        } else if ("percentage".equals(type)) {
+                            // percentage charge within range (e.g., 2% for amount 150)
+                            return amount.multiply(fee).divide(HUNDRED, 2, java.math.RoundingMode.HALF_UP);
+                        }
+                    }
+                }
+                break;
+
+            default:
+                log.info("Unknown charge type: {}", chargeType);
+                return BigDecimal.ZERO;
+        }
+
+        // fallback for range without a match
+        return BigDecimal.ZERO;
     }
 }

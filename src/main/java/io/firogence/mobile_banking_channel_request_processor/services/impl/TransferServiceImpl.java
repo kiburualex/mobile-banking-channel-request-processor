@@ -33,24 +33,23 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public GenericResponse internalTransfer(InternalTransferRequest request) {
         log.info("Internal Transfer Request: {}", gson.toJson(request));
-        // check transaction limit
         Optional<TransactionServiceEntity> transactionServiceOptional = transactionServiceRepository.findByCodeAndChannels_Name(request.serviceCode(), request.channel());
         if(transactionServiceOptional.isEmpty())
             throw new NoSuchElementException("No service for code " + request.serviceCode());
 
         TransactionServiceEntity transactionServiceEntity = transactionServiceOptional.get();
-        String limitsData = transactionServiceEntity.getLimitsData();
-        log.info("service code: {}, channel: {}, limits data: {}", request.serviceCode(), request.channel(), limitsData);
-
-        ChannelLimitRequest channelLimitRequest = ChannelLimitRequest.builder()
-                .serviceCode(request.serviceCode())
-                .channel(request.channel())
-                .amount(request.amount())
-                .customerNationalId(request.nationalId())
-                .limitsJson(limitsData == null ? "" : limitsData)
-                .build();
-        ChannelLimit chargeLimit = transactionService.isAmountWithinLimit(channelLimitRequest);
+        // check limits
         if(transactionServiceEntity.isApplyLimit()) {
+            String limitsData = transactionServiceEntity.getLimitsData();
+            log.info("service code: {}, channel: {}, limits data: {}", request.serviceCode(), request.channel(), limitsData);
+            ChannelLimitRequest channelLimitRequest = ChannelLimitRequest.builder()
+                    .serviceCode(request.serviceCode())
+                    .channel(request.channel())
+                    .amount(request.amount())
+                    .customerNationalId(request.nationalId())
+                    .limitsJson(limitsData == null ? "" : limitsData)
+                    .build();
+            ChannelLimit chargeLimit = transactionService.isAmountWithinLimit(channelLimitRequest);
             if(!chargeLimit.isHasLimit())
                 throw new OperationNotPermittedException("Limits not set for service code " + request.serviceCode() + ", channel " + request.channel());
 
@@ -60,6 +59,8 @@ public class TransferServiceImpl implements TransferService {
             if (!chargeLimit.isValidDailyTransactionLimit())
                 throw new OperationNotPermittedException("Your total transaction amount exceeds daily limit [" + utilService.formatWithCommas(chargeLimit.getDailyTransactionLimit()) + "]");
         }
+
+        // perform transfer
 
         return GenericResponse.builder()
                 .status("00")
