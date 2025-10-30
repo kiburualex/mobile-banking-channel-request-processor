@@ -45,6 +45,7 @@ public class ChargeImpl implements ChargeService {
         var chargeAmount = BigDecimal.ZERO;
         if(transactionService.getExpenseType().equals(ExpenseType.CUSTOMER_EXPENSE)){
             try {
+                // todo:: in future check if there are other services to be exempted from the customer
                 var chargesData = transactionService.getChargesData();
                 JsonArray chargesDataArray = gson.fromJson(chargesData, JsonArray.class);
                 chargeAmount = calculateCharge(request.channel(), request.amount(), chargesDataArray);
