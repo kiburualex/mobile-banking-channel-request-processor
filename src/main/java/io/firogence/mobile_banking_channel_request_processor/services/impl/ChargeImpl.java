@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.firogence.mobile_banking_channel_request_processor.dtos.GenericResponse;
 import io.firogence.mobile_banking_channel_request_processor.dtos.charge.ChargeRequest;
+import io.firogence.mobile_banking_channel_request_processor.entities.Tariff;
 import io.firogence.mobile_banking_channel_request_processor.entities.TransactionServiceEntity;
 import io.firogence.mobile_banking_channel_request_processor.enums.ExpenseType;
 import io.firogence.mobile_banking_channel_request_processor.repositories.TransactionServiceRepository;
@@ -48,13 +49,30 @@ public class ChargeImpl implements ChargeService {
                 JsonArray chargesDataArray = gson.fromJson(chargesData, JsonArray.class);
                 chargeAmount = calculateCharge(request.channel(), request.amount(), chargesDataArray);
             } catch (Exception e) {
-                log.error("Error calculating charge amount::", e);
+                log.error(String.format("Error calculating charge for [%s] [%s] [%s]::", request.serviceCode(), request.channel(), request.amount()), e);
             }
         }
 
-        // todo:: apply script engine or another formula
+        // calculate tariff based on amount
+        var tariffAmount = BigDecimal.ZERO;
+        if(transactionService.getTariff() != null){
+            Tariff tariff = transactionService.getTariff();
+            if(tariff.isActive()){
+                try {
+                    var tariffRangeData = tariff.getRangeData();
+                    JsonArray tariffDataArray = gson.fromJson(tariffRangeData, JsonArray.class);
+                    tariffAmount = getTariffByAmount(request.amount(), tariffDataArray);
+                } catch (Exception e) {
+                    log.error(String.format("Error calculating tariff for %s %s %s::", request.serviceCode(), request.channel(), request.amount()), e);
+                }
+            }
+        }
+
+        var totalCharge = chargeAmount.add(tariffAmount);
         Map<Object, Object> dataObject = new HashMap<>();
-        dataObject.put("amount", chargeAmount);
+        dataObject.put("totalCharge", totalCharge);
+        dataObject.put("charge", chargeAmount);
+        dataObject.put("tariff", tariffAmount);
         return GenericResponse.builder()
                 .status("00")
                 .message("success")
@@ -121,6 +139,24 @@ public class ChargeImpl implements ChargeService {
         }
 
         // fallback for range without a match
+        return BigDecimal.ZERO;
+    }
+
+
+    public BigDecimal getTariffByAmount(BigDecimal amount, JsonArray configArray) {
+        for (JsonElement element : configArray) {
+            JsonObject tariffRange = element.getAsJsonObject();
+            BigDecimal min = tariffRange.getAsJsonPrimitive("min").getAsBigDecimal();
+            BigDecimal max = tariffRange.getAsJsonPrimitive("max").getAsBigDecimal();
+            BigDecimal value = tariffRange.getAsJsonPrimitive("value").getAsBigDecimal();
+            // check if amount is >= min AND amount <= max (inclusive range)
+            if (amount.compareTo(min) >= 0 && amount.compareTo(max) <= 0) {
+                // match found
+                return value;
+            }
+        }
+
+        // return default 0
         return BigDecimal.ZERO;
     }
 }
