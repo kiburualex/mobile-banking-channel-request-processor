@@ -43,6 +43,7 @@ public class ChargeImpl implements ChargeService {
 
         // calculate charge if expense type is CUSTOMER_EXPENSE
         var chargeAmount = BigDecimal.ZERO;
+        var chargeExpenseType = transactionService.getExpenseType().name();
         if(transactionService.getExpenseType().equals(ExpenseType.CUSTOMER_EXPENSE)){
             try {
                 // todo:: in future check if there are other services to be exempted from the customer
@@ -56,9 +57,11 @@ public class ChargeImpl implements ChargeService {
 
         // calculate tariff based on amount
         var tariffAmount = BigDecimal.ZERO;
+        var tariffExpenseType = ExpenseType.CUSTOMER_EXPENSE.name();
         if(transactionService.getTariff() != null){
             Tariff tariff = transactionService.getTariff();
-            if(tariff.isActive()){
+            tariffExpenseType = tariff.getExpenseType().name();
+            if(tariff.isActive() && tariff.getExpenseType().equals(ExpenseType.CUSTOMER_EXPENSE)){
                 try {
                     var tariffRangeData = tariff.getRangeData();
                     JsonArray tariffDataArray = gson.fromJson(tariffRangeData, JsonArray.class);
@@ -73,7 +76,9 @@ public class ChargeImpl implements ChargeService {
         Map<Object, Object> dataObject = new HashMap<>();
         dataObject.put("totalCharge", totalCharge);
         dataObject.put("charge", chargeAmount);
+        dataObject.put("chargeExpenseType", chargeExpenseType);
         dataObject.put("tariff", tariffAmount);
+        dataObject.put("tariffExpenseType", tariffExpenseType);
         return GenericResponse.builder()
                 .status("00")
                 .message("success")

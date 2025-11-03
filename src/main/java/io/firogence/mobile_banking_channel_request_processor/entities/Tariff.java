@@ -1,6 +1,7 @@
 package io.firogence.mobile_banking_channel_request_processor.entities;
 
 import io.firogence.mobile_banking_channel_request_processor.common.BaseEntity;
+import io.firogence.mobile_banking_channel_request_processor.enums.ExpenseType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,4 +45,8 @@ public class Tariff extends BaseEntity {
 
     @Column(name = "active", columnDefinition = "boolean default true")
     private boolean active;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "expense_type", nullable = true)
+    private ExpenseType expenseType;
 }

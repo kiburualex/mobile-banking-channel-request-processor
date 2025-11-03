@@ -22,7 +22,7 @@ public record ChargeRequest(
         String serviceCode,
 
         @NotNull(message = "Amount is mandatory")
-        @DecimalMin(value = "0.0", message = "Amount must be minimum of 5 or higher")
+        @DecimalMin(value = "0.0", message = "Amount must be minimum of 0 or higher")
         BigDecimal amount
 ) {
 }
