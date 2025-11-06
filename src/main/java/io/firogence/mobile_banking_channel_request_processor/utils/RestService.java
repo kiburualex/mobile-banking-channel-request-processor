@@ -23,6 +23,7 @@ public class RestService {
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
+    // todo:: make it dynamic (headers, method and payload)
     public Map<String, Object> post(String url, String secret, JsonObject payloadMap){
         Map<String, Object> responseData = new HashMap<>();
         try {

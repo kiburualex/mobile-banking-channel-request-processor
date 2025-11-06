@@ -60,7 +60,7 @@ public class TransferServiceImpl implements TransferService {
                 throw new OperationNotPermittedException("Your total transaction amount exceeds daily limit [" + utilService.formatWithCommas(chargeLimit.getDailyTransactionLimit()) + "]");
         }
 
-        // perform transfer
+        // perform transfer to CBS from one account to another
 
         return GenericResponse.builder()
                 .status("00")
