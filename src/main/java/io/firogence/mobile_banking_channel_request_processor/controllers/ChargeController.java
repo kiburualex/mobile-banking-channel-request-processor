@@ -24,7 +24,7 @@ public class ChargeController {
     private final ChargeService chargeService;
 
     @PostMapping
-    public ResponseEntity<GenericResponse> create(@Valid @RequestBody ChargeRequest request){
+    public ResponseEntity<GenericResponse> getCharges(@Valid @RequestBody ChargeRequest request){
         return ResponseEntity.ok(chargeService.fetchCharges(request));
     }
 }
